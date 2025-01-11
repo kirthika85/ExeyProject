@@ -8,9 +8,9 @@ import requests
 import time
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import nltk
 import re
 
+import nltk
 # Ensure the required NLTK data is downloaded
 nltk.download("stopwords")
 nltk.download("punkt")
