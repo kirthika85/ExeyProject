@@ -11,6 +11,7 @@ from nltk.tokenize import word_tokenize
 import re
 
 import nltk
+nltk.data.path.append("/home/appuser/nltk_data")
 # Ensure the required NLTK data is downloaded
 nltk.download("stopwords")
 nltk.download("punkt")
