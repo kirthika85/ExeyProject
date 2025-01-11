@@ -12,10 +12,7 @@ import nltk
 import re
 
 # Ensure the required NLTK data is downloaded
-try:
-    nltk.data.find("corpora/stopwords")
-except LookupError:
-    nltk.download("stopwords")
+nltk.download("stopwords")
 
 try:
     nltk.data.find("tokenizers/punkt")
