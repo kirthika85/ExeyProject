@@ -37,10 +37,11 @@ if st.button("Search Market Insights"):
         def perform_search(query, num_results, delay):
             results = []
             try:
-                for i, result in enumerate(search(query, pause=delay)):
+                for i, result in enumerate(search(query)):
                     if i >= num_results:
                         break
                     results.append(result)
+                    time.sleep(delay) 
                 return results
             except Exception as e:
                 st.error(f"Error during search: {e}")
