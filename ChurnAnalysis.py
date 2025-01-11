@@ -10,19 +10,33 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import re
 import os
-
 import nltk
+
+# Add custom NLTK data path
 nltk.data.path.append("/home/appuser/nltk_data")
-# Ensure the required NLTK data is downloaded
-nltk.download("stopwords")
-nltk.download("punkt")
+
+# Ensure required NLTK data is downloaded
+try:
+    nltk.download("stopwords", download_dir="/home/appuser/nltk_data")
+    nltk.download("punkt", download_dir="/home/appuser/nltk_data")
+    st.write("Successfully downloaded or verified NLTK stopwords and punkt.")
+except Exception as e:
+    st.error(f"Error downloading NLTK data: {e}")
+
+# Debugging output in Streamlit
+st.write("### Debugging Information:")
+st.write("**NLTK Data Path:**", nltk.data.path)
+
+# Check punkt directory
+punkt_path = "/home/appuser/nltk_data/tokenizers/punkt"
+if os.path.exists(punkt_path):
+    st.write("**Punkt Directory Exists:**", True)
+    st.write("**Punkt Directory Contents:**", os.listdir(punkt_path))
+else:
+    st.error("Punkt Directory Missing.")
 
 # Streamlit app
 st.title("Customer Churn Tracker")
-
-print("NLTK Data Path:", nltk.data.path)
-print("NLTK Data Dir Contents:", os.listdir("/home/appuser/nltk_data"))
-print("Tokenizers Dir Contents:", os.listdir("/home/appuser/nltk_data/tokenizers"))
 
 # User Inputs
 company_name = st.text_input("Enter the Company Name", "Salesforce")
