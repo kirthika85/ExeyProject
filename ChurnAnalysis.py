@@ -8,7 +8,14 @@ import requests
 import time
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import nltk
 import re
+
+try:
+    nltk.data.find("corpora/stopwords")
+except LookupError:
+    nltk.download("stopwords")
+
 
 # Streamlit app
 st.title("Customer Churn Tracker")
