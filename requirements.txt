@@ -6,6 +6,6 @@ langchain_openai
 langchain_core
 google
 beautifulsoup4
-nltk
+nltk==3.6.2
 requests
 googlesearch-python
