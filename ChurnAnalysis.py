@@ -11,11 +11,16 @@ from nltk.tokenize import word_tokenize
 import nltk
 import re
 
+# Ensure the required NLTK data is downloaded
 try:
     nltk.data.find("corpora/stopwords")
 except LookupError:
     nltk.download("stopwords")
 
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt")
 
 # Streamlit app
 st.title("Customer Churn Tracker")
@@ -54,7 +59,6 @@ if st.button("Search Market Insights"):
                 st.error(f"Error during search: {e}")
                 return []
 
-
         urls = perform_search(search_query, num_results, delay_between_requests)
         st.write(f"Found {len(urls)} relevant results.")
 
@@ -88,10 +92,7 @@ if st.button("Search Market Insights"):
         if content_list:
             llm = ChatOpenAI(temperature=0.3, openai_api_key=openai_api_key)
             prompt = PromptTemplate(input_variables=["content", "company", "customer"],
-                                     template="""
-                You are a market analyst. Analyze the content below to identify recent market activities, 
-                including partnerships, contracts, or potential risks of churn, between {customer} and {company}. 
-                Summarize the findings and indicate if there's any sign of churn or market issues.
+                                     template="""You are a market analyst. Analyze the content below to identify recent market activities, including partnerships, contracts, or potential risks of churn, between {customer} and {company}. Summarize the findings and indicate if there's any sign of churn or market issues.
 
                 Content: {content}
             """)
