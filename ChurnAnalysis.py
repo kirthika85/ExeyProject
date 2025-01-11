@@ -13,11 +13,7 @@ import re
 
 # Ensure the required NLTK data is downloaded
 nltk.download("stopwords")
-
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
+nltk.download("punkt")
 
 # Streamlit app
 st.title("Customer Churn Tracker")
