@@ -4,6 +4,7 @@ langchain
 langchain-community
 langchain_openai
 langchain_core
+google
 beautifulsoup4
 nltk
 requests
