@@ -37,12 +37,15 @@ if st.button("Search Market Insights"):
         def perform_search(query, num_results, delay):
             results = []
             try:
-                for result in search(query, num_results=num_results, pause=delay):
+                for i, result in enumerate(search(query, pause=delay)):
+                    if i >= num_results:
+                        break
                     results.append(result)
                 return results
             except Exception as e:
                 st.error(f"Error during search: {e}")
                 return []
+
 
         urls = perform_search(search_query, num_results, delay_between_requests)
         st.write(f"Found {len(urls)} relevant results.")
