@@ -6,5 +6,5 @@ langchain_openai
 langchain_core
 beautifulsoup4
 requests
-google
+googlesearch-python
 nltk
