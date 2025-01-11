@@ -9,6 +9,7 @@ import time
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import re
+import os
 
 import nltk
 nltk.data.path.append("/home/appuser/nltk_data")
@@ -18,6 +19,10 @@ nltk.download("punkt")
 
 # Streamlit app
 st.title("Customer Churn Tracker")
+
+print("NLTK Data Path:", nltk.data.path)
+print("NLTK Data Dir Contents:", os.listdir("/home/appuser/nltk_data"))
+print("Tokenizers Dir Contents:", os.listdir("/home/appuser/nltk_data/tokenizers"))
 
 # User Inputs
 company_name = st.text_input("Enter the Company Name", "Salesforce")
