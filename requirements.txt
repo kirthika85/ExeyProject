@@ -4,4 +4,7 @@ langchain
 langchain-community
 langchain_openai
 langchain_core
-matplotlib
+beautifulsoup4
+requests
+google
+nltk
