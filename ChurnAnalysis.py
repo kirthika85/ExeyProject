@@ -35,6 +35,10 @@ if os.path.exists(punkt_path):
 else:
     st.error("Punkt Directory Missing. Ensure the required data is downloaded.")
 
+from nltk.tokenize import PunktSentenceTokenizer
+tokenizer = PunktSentenceTokenizer()
+nltk.tokenize.punkt = tokenizer
+
 # Streamlit app
 st.title("Customer Churn Tracker")
 
@@ -84,8 +88,13 @@ if st.button("Search Market Insights"):
 
         def preprocess_content(text):
             try:
+                try:
+                    words = word_tokenize(text)
+                except LookupError:
+                    st.warning("NLTK tokenization failed. Using simple split as fallback.")
+                words = text.split()
+                
                 stop_words = set(stopwords.words("english"))
-                words = word_tokenize(text)
                 filtered_words = [w for w in words if w.lower() not in stop_words]
                 keywords = ["churn", "contract termination", "partnership", "deal"]
                 highlighted_text = re.sub(
