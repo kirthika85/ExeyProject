@@ -13,7 +13,7 @@ import os
 import nltk
 
 # Add custom NLTK data path
-nltk.data.path.append("/home/appuser/nltk_data")
+nltk.data.path = ["/home/appuser/nltk_data"]
 
 # Ensure required NLTK data is downloaded
 try:
@@ -28,12 +28,12 @@ st.write("### Debugging Information:")
 st.write("**NLTK Data Path:**", nltk.data.path)
 
 # Check punkt directory
-punkt_path = "/home/appuser/nltk_data/tokenizers/punkt"
+punkt_path = os.path.join("/home/appuser/nltk_data", "tokenizers", "punkt")
 if os.path.exists(punkt_path):
     st.write("**Punkt Directory Exists:**", True)
     st.write("**Punkt Directory Contents:**", os.listdir(punkt_path))
 else:
-    st.error("Punkt Directory Missing.")
+    st.error("Punkt Directory Missing. Ensure the required data is downloaded.")
 
 # Streamlit app
 st.title("Customer Churn Tracker")
@@ -58,7 +58,7 @@ if st.button("Search Market Insights"):
 
         # Step 1: Perform Web Search
         search_query = f"{customer_name} {company_name} churn OR contract OR partnership OR deal {timeframe}"
-        
+
         def perform_search(query, num_results, delay):
             results = []
             try:
@@ -66,7 +66,7 @@ if st.button("Search Market Insights"):
                     if i >= num_results:
                         break
                     results.append(result)
-                    time.sleep(delay) 
+                    time.sleep(delay)
                 return results
             except Exception as e:
                 st.error(f"Error during search: {e}")
@@ -76,26 +76,35 @@ if st.button("Search Market Insights"):
         st.write(f"Found {len(urls)} relevant results.")
 
         # Step 2: Scrape and Preprocess Content
+        def clean_text(text):
+            """Clean text by removing non-ASCII characters and extra whitespace."""
+            text = re.sub(r'[^\x00-\x7F]+', ' ', text)
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text
+
         def preprocess_content(text):
-            stop_words = set(stopwords.words("english"))
-            words = word_tokenize(text)
-            filtered_words = [w for w in words if w.lower() not in stop_words]
-            
-            keywords = ["churn", "contract termination", "partnership", "deal"]
-            highlighted_text = re.sub(
-                r'\b(' + '|'.join(keywords) + r')\b',
-                lambda x: f"**{x.group(0).upper()}**",
-                ' '.join(filtered_words),
-                flags=re.IGNORECASE
-            )
-            return highlighted_text
-        
+            try:
+                stop_words = set(stopwords.words("english"))
+                words = word_tokenize(text)
+                filtered_words = [w for w in words if w.lower() not in stop_words]
+                keywords = ["churn", "contract termination", "partnership", "deal"]
+                highlighted_text = re.sub(
+                    r'\b(' + '|'.join(keywords) + r')\b',
+                    lambda x: f"**{x.group(0).upper()}**",
+                    ' '.join(filtered_words),
+                    flags=re.IGNORECASE
+                )
+                return highlighted_text
+            except Exception as e:
+                st.warning(f"Tokenization failed. Using raw content as fallback. Error: {e}")
+                return clean_text(text)
+
         content_list = []
         for url in urls:
             try:
                 response = requests.get(url)
                 soup = BeautifulSoup(response.text, "html.parser")
-                content = soup.get_text()
+                content = clean_text(soup.get_text())
                 preprocessed_content = preprocess_content(content[:2000])  # Limit to 2000 characters
                 content_list.append(preprocessed_content)
             except Exception as e:
@@ -104,11 +113,13 @@ if st.button("Search Market Insights"):
         # Step 3: Analyze Content with LLM
         if content_list:
             llm = ChatOpenAI(temperature=0.3, openai_api_key=openai_api_key)
-            prompt = PromptTemplate(input_variables=["content", "company", "customer"],
-                                     template="""You are a market analyst. Analyze the content below to identify recent market activities, including partnerships, contracts, or potential risks of churn, between {customer} and {company}. Summarize the findings and indicate if there's any sign of churn or market issues.
+            prompt = PromptTemplate(
+                input_variables=["content", "company", "customer"],
+                template="""You are a market analyst. Analyze the content below to identify recent market activities, including partnerships, contracts, or potential risks of churn, between {customer} and {company}. Summarize the findings and indicate if there's any sign of churn or market issues.
 
-                Content: {content}
-            """)
+Content: {content}
+"""
+            )
             summaries = []
             for content in content_list:
                 try:
