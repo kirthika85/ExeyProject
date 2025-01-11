@@ -15,10 +15,10 @@ import nltk
 # Add custom NLTK data path
 nltk.data.path = ["/home/appuser/nltk_data"]
 
-# Ensure required NLTK data is downloaded
+# Force re-download required NLTK data
 try:
     nltk.download("stopwords", download_dir="/home/appuser/nltk_data")
-    nltk.download("punkt", download_dir="/home/appuser/nltk_data")
+    nltk.download("punkt", download_dir="/home/appuser/nltk_data", force=True)
     st.write("Successfully downloaded or verified NLTK stopwords and punkt.")
 except Exception as e:
     st.error(f"Error downloading NLTK data: {e}")
@@ -27,7 +27,7 @@ except Exception as e:
 st.write("### Debugging Information:")
 st.write("**NLTK Data Path:**", nltk.data.path)
 
-# Check punkt directory
+# Verify punkt directory
 punkt_path = os.path.join("/home/appuser/nltk_data", "tokenizers", "punkt")
 if os.path.exists(punkt_path):
     st.write("**Punkt Directory Exists:**", True)
