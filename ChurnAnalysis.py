@@ -127,10 +127,19 @@ if st.button("Search Market Insights"):
             llm = ChatOpenAI(temperature=0.3, openai_api_key=openai_api_key)
             prompt = PromptTemplate(
                 input_variables=["content", "company", "customer"],
-                template="""You are a market analyst. Analyze the content below to identify recent market activities, including partnerships, contracts, or potential risks of churn, between {customer} and {company}. Summarize the findings and indicate if there's any sign of churn or market issues.
+                template="""You are a market analyst. Analyze the content below to identify recent market activities between {customer} and {company}. Focus on the following:
 
-Content: {content}
-"""
+                        1. Any indications of {customer} moving away from {company}'s services or adopting a competitor's product.
+                        2. Specific mentions of partnerships, contracts, or deals between {customer} and {company} or their competitors.
+                        3. Signs of customer dissatisfaction or potential churn risks.
+                        4. Clear statements about {customer} switching from {company} to another service provider.
+
+                        Summarize your findings concisely, highlighting any concrete evidence of churn or market issues. If there's no clear indication of churn or switching services, state that explicitly.
+
+                Content: {content}
+
+                Summary:
+                """
             )
             summaries = []
             for i, content in enumerate(content_list):
