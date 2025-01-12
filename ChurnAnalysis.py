@@ -1,6 +1,7 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from googlesearch import search
 import openai
 from bs4 import BeautifulSoup
@@ -135,9 +136,8 @@ Content: {content}
             for i, content in enumerate(content_list):
                 try:
                     st.write(f"Processing content {i + 1} with LLM...")
-                    summary = llm.generate(
-                        prompt.format(content=content, company=company_name, customer=customer_name)
-                    )
+                    chain = LLMChain(llm=llm, prompt=prompt)
+                    summary = chain.run(content=content, company=company_name, customer=customer_name)
                     summaries.append(summary)
                 except Exception as e:
                     st.error(f"Error generating insights: {e}")
