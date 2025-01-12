@@ -15,6 +15,9 @@ import nltk
 # Add custom NLTK data path
 nltk.data.path = ["/home/appuser/nltk_data"]
 
+# Debug: NLTK Data Path Initialization
+st.write("Initializing NLTK Data Path:", nltk.data.path)
+
 # Force re-download required NLTK data
 try:
     nltk.download("stopwords", download_dir="/home/appuser/nltk_data")
@@ -23,23 +26,14 @@ try:
 except Exception as e:
     st.error(f"Error downloading NLTK data: {e}")
 
-# Debugging output in Streamlit
-st.write("### Debugging Information:")
-st.write("**NLTK Data Path:**", nltk.data.path)
-
-# Verify punkt directory
+# Debug: Verify NLTK Data Path
 punkt_path = os.path.join("/home/appuser/nltk_data", "tokenizers", "punkt")
 if os.path.exists(punkt_path):
-    st.write("**Punkt Directory Exists:**", True)
-    st.write("**Punkt Directory Contents:**", os.listdir(punkt_path))
+    st.write("Punkt Directory Exists. Contents:", os.listdir(punkt_path))
 else:
-    st.error("Punkt Directory Missing. Ensure the required data is downloaded.")
+    st.error("Punkt Directory Missing.")
 
-from nltk.tokenize import PunktSentenceTokenizer
-tokenizer = PunktSentenceTokenizer()
-nltk.tokenize.punkt = tokenizer
-
-# Streamlit app
+# Streamlit app title
 st.title("Customer Churn Tracker")
 
 # User Inputs
@@ -50,9 +44,20 @@ openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
 num_results = st.slider("Number of Search Results", min_value=1, max_value=20, value=5)
 delay_between_requests = st.slider("Delay Between Requests (seconds)", min_value=1, max_value=10, value=1)
 
+# Debug: Log user inputs
+st.write("User Inputs:")
+st.write("Company Name:", company_name)
+st.write("Customer Name:", customer_name)
+st.write("Timeframe:", timeframe)
+st.write("Number of Results:", num_results)
+st.write("Delay Between Requests:", delay_between_requests)
+
 # Initialize OpenAI API Key
 if openai_api_key:
     openai.api_key = openai_api_key
+    st.write("OpenAI API Key initialized.")
+else:
+    st.warning("No OpenAI API Key provided.")
 
 if st.button("Search Market Insights"):
     if not company_name or not customer_name:
@@ -62,11 +67,13 @@ if st.button("Search Market Insights"):
 
         # Step 1: Perform Web Search
         search_query = f"{customer_name} {company_name} churn OR contract OR partnership OR deal {timeframe}"
+        st.write("Search Query:", search_query)
 
         def perform_search(query, num_results, delay):
             results = []
             try:
                 for i, result in enumerate(search(query)):
+                    st.write(f"Search Result {i + 1}: {result}")
                     if i >= num_results:
                         break
                     results.append(result)
@@ -81,19 +88,13 @@ if st.button("Search Market Insights"):
 
         # Step 2: Scrape and Preprocess Content
         def clean_text(text):
-            """Clean text by removing non-ASCII characters and extra whitespace."""
             text = re.sub(r'[^\x00-\x7F]+', ' ', text)
             text = re.sub(r'\s+', ' ', text).strip()
             return text
 
         def preprocess_content(text):
             try:
-                try:
-                    words = word_tokenize(text)
-                except LookupError:
-                    st.warning("NLTK tokenization failed. Using simple split as fallback.")
-                words = text.split()
-                
+                words = word_tokenize(text)
                 stop_words = set(stopwords.words("english"))
                 filtered_words = [w for w in words if w.lower() not in stop_words]
                 keywords = ["churn", "contract termination", "partnership", "deal"]
@@ -105,7 +106,7 @@ if st.button("Search Market Insights"):
                 )
                 return highlighted_text
             except Exception as e:
-                st.warning(f"Tokenization failed. Using raw content as fallback. Error: {e}")
+                st.warning(f"Tokenization failed. Error: {e}")
                 return clean_text(text)
 
         content_list = []
@@ -114,6 +115,7 @@ if st.button("Search Market Insights"):
                 response = requests.get(url)
                 soup = BeautifulSoup(response.text, "html.parser")
                 content = clean_text(soup.get_text())
+                st.write(f"Scraping content from URL: {url}")
                 preprocessed_content = preprocess_content(content[:2000])  # Limit to 2000 characters
                 content_list.append(preprocessed_content)
             except Exception as e:
@@ -130,8 +132,9 @@ Content: {content}
 """
             )
             summaries = []
-            for content in content_list:
+            for i, content in enumerate(content_list):
                 try:
+                    st.write(f"Processing content {i + 1} with LLM...")
                     summary = llm.generate(
                         prompt.format(content=content, company=company_name, customer=customer_name)
                     )
