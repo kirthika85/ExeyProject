@@ -180,5 +180,5 @@ if st.button("Search Market Insights"):
             st.subheader("Sources:")
             for url in urls:
                 st.write(url)
-                else:
-                    st.error("No relevant content found.")
+            else:
+                st.error("No relevant content found.")
