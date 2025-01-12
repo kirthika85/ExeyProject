@@ -67,7 +67,7 @@ if st.button("Search Market Insights"):
         st.write(f"Searching recent market insights between {customer_name} and {company_name}...")
 
         # Step 1: Perform Web Search
-        search_query = f"{customer_name} {company_name} churn OR contract OR partnership OR deal {timeframe}"
+        search_query = f"{customer_name} {company_name} switch OR migrate OR churn OR move OR contract OR partnership OR deal {timeframe} OR 'moved from' {timeframe}"
         st.write("Search Query:", search_query)
 
         def perform_search(query, num_results, delay):
@@ -117,7 +117,7 @@ if st.button("Search Market Insights"):
                 soup = BeautifulSoup(response.text, "html.parser")
                 content = clean_text(soup.get_text())
                 st.write(f"Scraping content from URL: {url}")
-                preprocessed_content = preprocess_content(content[:2000])  # Limit to 2000 characters
+                preprocessed_content = preprocess_content(content[:5000])  # Limit to 5000 characters
                 content_list.append(preprocessed_content)
             except Exception as e:
                 st.error(f"Error scraping {url}: {e}")
@@ -129,15 +129,14 @@ if st.button("Search Market Insights"):
                 input_variables=["content", "company", "customer"],
                 template="""You are a market analyst. Analyze the content below to identify recent market activities between {customer} and {company}. Focus on the following:
 
-                        1. Any indications of {customer} moving away from {company}'s services or adopting a competitor's product.
-                        2. Specific mentions of partnerships, contracts, or deals between {customer} and {company} or their competitors.
-                        3. Signs of customer dissatisfaction or potential churn risks.
-                        4. Clear statements about {customer} switching from {company} to another service provider.
-
-                        Summarize your findings concisely, highlighting any concrete evidence of churn or market issues. If there's no clear indication of churn or switching services, state that explicitly.
-
+                        1. Any clear statements or indications of {customer} switching from {company} to another service provider.
+                        2. Specific mentions of {customer} moving away from {company}'s services or adopting a competitor's product.
+                        3. Evidence of {customer} migrating their data or services from {company} to another platform.
+                        4. Signs of customer dissatisfaction or potential churn risks related to {company}.
+                        5. Any positive outcomes reported after switching from {company} to another service.
+                        
+                Summarize your findings concisely, highlighting any concrete evidence of switching, migration, or churn. If there's a clear switch or migration mentioned, state it explicitly with any relevant details (e.g., which company they switched to, when it happened, reasons for the switch).
                 Content: {content}
-
                 Summary:
                 """
             )
@@ -157,8 +156,29 @@ if st.button("Search Market Insights"):
                 st.write(f"**Source {i + 1}:**")
                 st.write(summary)
 
+            # New Overall Analysis Section
+            if summaries:
+                st.subheader("Overall Analysis:")
+                try:
+                    overall_summary = "\n".join(summaries)
+                    final_prompt = PromptTemplate(
+                        input_variables=["summaries", "company", "customer"],
+                        template="""Based on the following summaries, provide a concise overall analysis of the relationship between {customer} and {company}. Highlight any clear evidence of switching, migration, or churn. If multiple sources confirm a switch or migration, state it confidently.
+
+                        Summaries:
+                        {summaries}
+
+                    Overall Analysis:
+                    """
+                    )
+                    overall_chain = LLMChain(llm=llm, prompt=final_prompt)
+                    overall_analysis = overall_chain.run(summaries=overall_summary, company=company_name, customer=customer_name)
+                    st.write(overall_analysis)
+                except Exception as e:
+                    st.error(f"Error generating overall analysis: {e}")
+
             st.subheader("Sources:")
             for url in urls:
                 st.write(url)
-        else:
-            st.error("No relevant content found.")
+            else:
+                st.error("No relevant content found.")
